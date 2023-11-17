@@ -14,7 +14,7 @@ ARG TARGETARCH
 
 # Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt-get install -y --no-install-recommends  \
         ca-certificates \
         curl \
         dirmngr \
@@ -67,27 +67,35 @@ RUN rm -rf /var/lib/apt/lists/* odoo.deb
 
 # Copy entrypoint script and Odoo configuration file
 COPY ./entrypoint.sh /
-COPY ./odoo.conf /etc/odoo/
+COPY ./odoo.conf /
+
+RUN ls -la /etc/odoo/
 
 RUN chmod 777 /entrypoint.sh
 
 # Set permissions and Mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for users addons
-RUN chown odoo /etc/odoo/odoo.conf \
+RUN chown odoo /odoo.conf \
     && mkdir -p /mnt/extra-addons \
     && chown -R odoo /mnt/extra-addons
+RUN ls -la /etc/odoo/
+
 VOLUME ["/var/lib/odoo", "/mnt/extra-addons"]
+RUN ls -la /etc/odoo/
 
 # Expose Odoo services
 EXPOSE 8069 8071 8072
 
 # Set the default config file
-ENV ODOO_RC /etc/odoo/odoo.conf
+ENV ODOO_RC /odoo.conf
 
 COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
 RUN chmod 777 /usr/local/bin/wait-for-psql.py
+RUN ls -la /etc/odoo/
 
 # Set default user when running the container
 USER odoo
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["odoo"]
+RUN ls -la /etc/odoo/
+RUN cat /etc/odoo/odoo.conf
